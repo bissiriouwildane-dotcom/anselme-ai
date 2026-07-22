@@ -355,7 +355,8 @@
                 generateBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mixage en cours...`;
                 audioPlayerContainer.classList.add('hidden');
 
-                const response = await fetch('http://10.94.108.237:8050/api/tts', {
+                // MODIFICATION ICI : Appel de ton endpoint API sur Render
+                const response = await fetch('https://anselme-ai.onrender.com/api/tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
