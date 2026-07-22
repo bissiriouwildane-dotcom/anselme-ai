@@ -1,0 +1,15 @@
+{
+  "name": "Anselme.AI",
+  "short_name": "Anselme.AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2593/2593301.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
