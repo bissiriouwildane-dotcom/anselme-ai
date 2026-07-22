@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anselme.AI - Premium TTS Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Masque la scrollbar de la grille des voix tout en gardant le défilement */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gradient-to-tr from-violet-600 to-fuchsia-600 rounded-lg flex items-center justify-center shadow-lg shadow-violet-500/30">
+                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+            </div>
+            <span class="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Anselme.AI</span>
+        </div>
+        <span class="text-xs bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-1 rounded-full font-medium tracking-wide uppercase">Studio Pro</span>
+    </header>
+
+    <main class="flex-1 p-4 max-w-md mx-auto w-full space-y-5">
+        
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Texte à convertir</label>
+                <div class="flex gap-1">
+                    <button type="button" onclick="insertPause('... ')" class="text-[10px] bg-slate-900 border border-slate-800 text-slate-300 hover:text-violet-400 hover:border-violet-500/50 px-2 py-0.5 rounded-md transition-all active:scale-95 cursor-pointer">
+                        + Pause Courte
+                    </button>
+                    <button type="button" onclick="insertPause('...... ')" class="text-[10px] bg-slate-900 border border-slate-800 text-slate-300 hover:text-fuchsia-400 hover:border-fuchsia-500/50 px-2 py-0.5 rounded-md transition-all active:scale-95 cursor-pointer">
+                        + Pause Longue
+                    </button>
+                </div>
+            </div>
+            <div class="relative bg-slate-900 border border-slate-800 rounded-2xl focus-within:border-violet-500 transition-all p-3 shadow-inner">
+                <textarea id="textInput" rows="5" class="w-full bg-transparent resize-none outline-none text-slate-200 placeholder-slate-500 text-base leading-relaxed" placeholder="Écris ou colle ton script ici..."></textarea>
+                <div class="flex justify-end text-xs text-slate-500 mt-1 font-mono" id="charCount">0 / 10000</div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-3 space-y-1.5">
+            <p class="text-xs font-bold text-violet-400 flex items-center gap-1">
+                <i class="fa-solid fa-lightbulb"></i> Astuces Pro pour un réalisme maximum :
+            </p>
+            <ul class="text-[11px] text-slate-400 list-disc list-inside space-y-0.5 pl-1">
+                <li>Ajoute des <span class="text-slate-200 font-mono">...</span> pour forcer l'IA à faire des pauses naturelles.</li>
+                <li>Écris comme à l'oral avec des phrases courtes et rythmées.</li>
+                <li>Utilise des mots de transition (<span class="italic text-slate-300">"Alors..."</span>, <span class="italic text-slate-300">"Du coup..."</span>) pour humaniser le flux.</li>
+            </ul>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Réglages Studio</label>
+                
+                <select id="presetSelect" class="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2 py-1 outline-none focus:border-violet-500 transition-all cursor-pointer">
+                    <option value="custom">Réglages personnalisés</option>
+                    <option value="pub">Mode Pub / Énergie 🔥</option>
+                    <option value="doc">Mode Documentaire 🎙️</option>
+                    <option value="asmr">Mode Confidence / ASMR 🤫</option>
+                </select>
+            </div>
+            
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-medium">
+                    <span class="text-slate-300">Vitesse (Rate)</span>
+                    <span id="rateVal" class="text-violet-400 font-mono">Normal</span>
+                </div>
+                <input type="range" id="rateSlider" min="-50" max="50" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-violet-500">
+            </div>
+
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-medium">
+                    <span class="text-slate-300">Tonalité (Pitch / Gravité)</span>
+                    <span id="pitchVal" class="text-violet-400 font-mono">0 Hz</span>
+                </div>
+                <input type="range" id="pitchSlider" min="-20" max="20" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-violet-500">
+            </div>
+
+            <div class="space-y-1">
+                <div class="flex justify-between text-xs font-medium">
+                    <span class="text-slate-300">Volume (Gain)</span>
+                    <span id="volumeVal" class="text-violet-400 font-mono">100%</span>
+                </div>
+                <input type="range" id="volumeSlider" min="-50" max="50" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-violet-500">
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Sélection du Catalogue Vocal (10 Profils)</label>
+            <div class="grid grid-cols-2 gap-2 max-h-[260px] overflow-y-auto pr-1 no-scrollbar border border-slate-800/40 rounded-xl p-1" id="voiceGrid">
+                
+                <label class="relative bg-slate-900 border border-violet-600 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all shadow-md">
+                    <input type="radio" name="voice" value="fr-FR-DeniseNeural" checked class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center text-[10px] font-bold">F</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">1. IA Réaliste ✨</p>
+                            <p class="text-[9px] text-slate-400 truncate">Naturel & pauses</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-FR-VivienneNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center text-[10px] font-bold">F</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">2. Storytelling 📖</p>
+                            <p class="text-[9px] text-slate-400 truncate">Expressif & chaud</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-BE-CharlineNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center text-[10px] font-bold">F</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">3. Style Pote ☕</p>
+                            <p class="text-[9px] text-slate-400 truncate">Détendu & proche</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-FR-HenriNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">4. Cinématique 🎬</p>
+                            <p class="text-[9px] text-slate-400 truncate">Grave & puissant</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-FR-RemyMultilingualNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">5. TikTok Énergie 🔥</p>
+                            <p class="text-[9px] text-slate-400 truncate">Rapide & rythmé</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-CH-FabriceNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">6. Info Doc 🎙️</p>
+                            <p class="text-[9px] text-slate-400 truncate">Crédible & clair</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-CA-ThierryNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">7. Pub Premium 💎</p>
+                            <p class="text-[9px] text-slate-400 truncate">Persuasif & pro</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-BE-GerardNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">8. Motivation 💪</p>
+                            <p class="text-[9px] text-slate-400 truncate">Inspirant & profond</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-CA-JeanNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">9. Deep Business 💼</p>
+                            <p class="text-[9px] text-slate-400 truncate">Calme & charisme</p>
+                        </div>
+                    </div>
+                </label>
+
+                <label class="relative bg-slate-900 border border-slate-800 rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all">
+                    <input type="radio" name="voice" value="fr-CA-AntoineNeural" class="hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 shrink-0 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold">M</div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-xs text-white truncate">10. Aventurier 🧭</p>
+                            <p class="text-[9px] text-slate-400 truncate">Grand Reportage</p>
+                        </div>
+                    </div>
+                </label>
+
+            </div>
+        </div>
+
+        <!-- Conteneur Audio + Bouton de Téléchargement -->
+        <div id="audioPlayerContainer" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-xl">
+            <p class="text-xs font-medium text-emerald-400 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span> Prêt à l'écoute !
+            </p>
+            
+            <audio id="audioPlayer" controls class="w-full h-10 accent-violet-600"></audio>
+
+            <!-- Bouton de Téléchargement -->
+            <a id="downloadBtn" download="anselme_ai_audio.mp3" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white py-2.5 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/30">
+                <i class="fa-solid fa-download"></i> Télécharger l'audio (MP3)
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="p-4 bg-slate-900/80 backdrop-blur-md border-t border-slate-800 sticky bottom-0 z-50">
+        <div class="max-w-md mx-auto">
+            <button id="generateBtn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 active:scale-[0.98] text-white py-4 rounded-xl font-bold shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 text-base transition-all cursor-pointer">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Générer la Voix Off Pro
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const charCount = document.getElementById('charCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Récupération des sliders
+        const rateSlider = document.getElementById('rateSlider');
+        const pitchSlider = document.getElementById('pitchSlider');
+        const volumeSlider = document.getElementById('volumeSlider');
+        
+        const rateVal = document.getElementById('rateVal');
+        const pitchVal = document.getElementById('pitchVal');
+        const volumeVal = document.getElementById('volumeVal');
+
+        // Menu Preset
+        const presetSelect = document.getElementById('presetSelect');
+
+        const MAX_CHARS = 10000;
+        textInput.setAttribute('maxlength', MAX_CHARS);
+        charCount.textContent = `0 / ${MAX_CHARS}`;
+
+        textInput.addEventListener('input', () => {
+            charCount.textContent = `${textInput.value.length} / ${MAX_CHARS}`;
+        });
+
+        // Définition des valeurs logiques des Presets Acoustiques
+        const presets = {
+            pub: { rate: 12, pitch: 3, volume: 15 },
+            doc: { rate: -8, pitch: -2, volume: 0 },
+            asmr: { rate: -4, pitch: -5, volume: -15 }
+        };
+
+        // Met à jour l'affichage texte des sliders
+        function updateSliderLabels() {
+            let r = parseInt(rateSlider.value);
+            rateVal.textContent = r >= 0 ? `+${r}%` : `${r}%`;
+            if(r === 0) rateVal.textContent = "Normal";
+
+            let p = parseInt(pitchSlider.value);
+            pitchVal.textContent = p >= 0 ? `+${p} Hz` : `${p} Hz`;
+
+            let v = parseInt(volumeSlider.value);
+            volumeVal.textContent = `${100 + v}%`;
+        }
+
+        // Écouteur sur le changement de preset
+        presetSelect.addEventListener('change', () => {
+            const key = presetSelect.value;
+            if (key !== 'custom' && presets[key]) {
+                rateSlider.value = presets[key].rate;
+                pitchSlider.value = presets[key].pitch;
+                volumeSlider.value = presets[key].volume;
+                updateSliderLabels();
+            }
+        });
+
+        // Repasser en mode "personnalisé" si l'utilisateur touche un slider manuellement
+        [rateSlider, pitchSlider, volumeSlider].forEach(slider => {
+            slider.addEventListener('input', () => {
+                presetSelect.value = 'custom';
+                updateSliderLabels();
+            });
+        });
+
+        // Fonction d'insertion automatique de pauses au curseur
+        function insertPause(pauseStr) {
+            const start = textInput.selectionStart;
+            const end = textInput.selectionEnd;
+            const text = textInput.value;
+            
+            // Insertion de la pause
+            textInput.value = text.substring(0, start) + pauseStr + text.substring(end);
+            
+            // Repositionnement du curseur juste après l'insertion
+            textInput.selectionStart = textInput.selectionEnd = start + pauseStr.length;
+            textInput.focus();
+            
+            // Mise à jour du compteur de caractères
+            charCount.textContent = `${textInput.value.length} / ${MAX_CHARS}`;
+        }
+
+        // Gestion du style visuel de sélection de la grille des voix
+        const voiceLabels = document.querySelectorAll('#voiceGrid label');
+        voiceLabels.forEach(label => {
+            const input = label.querySelector('input[type="radio"]');
+            if(input) {
+                input.addEventListener('change', () => {
+                    voiceLabels.forEach(l => {
+                        l.classList.remove('border-violet-600', 'shadow-md');
+                        l.classList.add('border-slate-800');
+                    });
+                    if(input.checked) {
+                        label.classList.remove('border-slate-800');
+                        label.classList.add('border-violet-600', 'shadow-md');
+                    }
+                });
+            }
+        });
+
+        generateBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                alert("Écris d'abord un texte avant de générer la voix !");
+                return;
+            }
+
+            const selectedVoiceInput = document.querySelector('input[name="voice"]:checked');
+            const voiceId = selectedVoiceInput ? selectedVoiceInput.value : "fr-FR-DeniseNeural";
+
+            const rateStr = rateSlider.value >= 0 ? `+${rateSlider.value}%` : `${rateSlider.value}%`;
+            const pitchStr = pitchSlider.value >= 0 ? `+${pitchSlider.value}Hz` : `${pitchSlider.value}Hz`;
+            const volumeStr = volumeSlider.value >= 0 ? `+${volumeSlider.value}%` : `${volumeSlider.value}%`;
+
+            try {
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mixage en cours...`;
+                audioPlayerContainer.classList.add('hidden');
+
+                const response = await fetch('http://10.94.108.237:8050/api/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        voice_id: voiceId,
+                        rate: rateStr,
+                        pitch: pitchStr,
+                        volume: volumeStr
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Une erreur est survenue.");
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                // Affectation au lecteur audio
+                audioPlayer.src = audioUrl;
+
+                // Configuration dynamique du bouton de téléchargement
+                downloadBtn.href = audioUrl;
+                
+                // Nom unique par fichier (ex: Anselme_AI_1721662595000.mp3)
+                downloadBtn.setAttribute('download', `Anselme_AI_${Date.now()}.mp3`);
+
+                // Affichage du bloc
+                audioPlayerContainer.classList.remove('hidden');
+                audioPlayer.play();
+
+            } catch (error) {
+                console.error(error);
+                alert(`Erreur Studio : ${error.message}`);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Générer la Voix Off Pro`;
+            }
+        });
+    </script>
+</body>
+</html>
